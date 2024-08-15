@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">WILProject</string>
+    <string name="title_activity_get_date">GetDatePage</string>
+    
+    <string-array name="type">
+        <item>Select Your Illness</item>
+        <item>HIV/AIDS</item>
+        <item>Hypertension</item>
+        <item>Heart Disease</item>
+        <item>Diabetes</item>
+        <item>Epilepsy</item>
+        <item>Arthitis</item>
+        <item>TB</item>
+    </string-array>
+</resources>

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "910653707810",
+    "project_id": "wilproject-b88e2",
+    "storage_bucket": "wilproject-b88e2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:910653707810:android:a225270c73f023b6b21c7b",
+        "android_client_info": {
+          "package_name": "com.example.wilproject"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAacEGCXTqmmYzvNc8zCSdr0qPlZUmkrDM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
