@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">WILProject</string>
+    <string name="title_activity_login_page">LoginPage</string>
     <string name="title_activity_get_date">GetDatePage</string>
     
     <string-array name="type">
