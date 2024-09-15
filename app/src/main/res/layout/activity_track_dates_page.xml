@@ -16,14 +16,6 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/background2" />
 
-    <view
-        android:id="@+id/view"
-        class="com.google.android.material.appbar.AppBarLayout"
-        android:layout_width="418dp"
-        android:layout_height="97dp"
-        tools:layout_editor_absoluteX="-6dp"
-        tools:layout_editor_absoluteY="634dp" />
-
     <TextView
         android:id="@+id/textView6"
         android:layout_width="wrap_content"
@@ -33,19 +25,33 @@
         tools:layout_editor_absoluteX="42dp"
         tools:layout_editor_absoluteY="32dp" />
 
-    <ImageView
-        android:id="@+id/imageView10"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:srcCompat="@drawable/profile_icon"
-        tools:layout_editor_absoluteX="328dp"
-        tools:layout_editor_absoluteY="32dp" />
-
     <CalendarView
         android:id="@+id/calendarView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         tools:layout_editor_absoluteX="30dp"
         tools:layout_editor_absoluteY="95dp" />
+
+    <FrameLayout
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@id/bottomMenu"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+    </FrameLayout>
+
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomMenu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:menu="@menu/bottommenu" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

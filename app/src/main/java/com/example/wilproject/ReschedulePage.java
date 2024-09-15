@@ -25,7 +25,7 @@ public class ReschedulePage extends AppCompatActivity {
     private TextView newshowDetails;
     private Button dateBtn;
     private Button timeBtn;
-
+    private Button reSchedule;
     private int selectedhrs;
     private int selectedmin;
 
@@ -43,6 +43,8 @@ public class ReschedulePage extends AppCompatActivity {
         dateBtn = findViewById(R.id.DateBtn);
         timeBtn = findViewById(R.id.retimeBtn);
         newshowDetails = findViewById(R.id.reDetails);
+        reSchedule = findViewById(R.id.rescheduleBtn);
+        calendarView = findViewById(R.id.calendarView3);
 
         calander = calander.getInstance();
 
@@ -60,8 +62,7 @@ public class ReschedulePage extends AppCompatActivity {
                         selectedMonth = month + 1; // Add 1 to get the correct month
                         selectedDay = dayOfMonth;
 
-                        // Display the selected date
-                        newshowDetails.setText(String.format("Selected Date: %02d/%02d/%d", selectedDay, selectedMonth, selectedYear));
+
                     }, selectedYear, selectedMonth - 1, selectedDay); // Subtract 1 for proper month indexing
 
             // Show the date picker dialog
@@ -75,10 +76,36 @@ public class ReschedulePage extends AppCompatActivity {
                     (TimePicker view, int hourOfDay, int minute) -> {
                         selectedhrs = hourOfDay;
                         selectedmin = (minute / 30) * 30; // Round to nearest 30 minutes
-                        newshowDetails.setText(String.format("Selected Time: %02d:%02d", selectedhrs, selectedmin));
+
+
+
                     }, selectedhrs, selectedmin, true);
             timePickerDialog.show();
         });
+
+
+        reSchedule.setOnClickListener(v -> {
+            updateDetails();
+            updateCalendarView();
+        });
+
+    }
+
+    private void updateDetails() {
+        String formattedDate = String.format("Selected Date: %02d/%02d/%d", selectedDay, selectedMonth, selectedYear);
+        String formattedTime = String.format("Selected Time: %02d:%02d", selectedhrs, selectedmin);
+
+        // Update the TextView with both date and time
+        newshowDetails.setText(formattedDate + "\n" + formattedTime);
+    }
+
+    private void updateCalendarView() {
+        // Create a Calendar instance and set it to the selected date
+        Calendar updatedCalendar = Calendar.getInstance();
+        updatedCalendar.set(selectedYear, selectedMonth - 1, selectedDay); // Months are 0-indexed
+
+        // Update the CalendarView to show the selected date
+        calendarView.setDate(updatedCalendar.getTimeInMillis(), true, true);
     }
 
     private void initDatePicker(){

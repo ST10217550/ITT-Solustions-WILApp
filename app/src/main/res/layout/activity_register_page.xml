@@ -6,13 +6,6 @@
     android:layout_height="match_parent"
     tools:context=".RegisterPage">
 
-    <ImageView
-        android:id="@+id/imageView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:srcCompat="@drawable/background2"
-        tools:layout_editor_absoluteX="0dp"
-        tools:layout_editor_absoluteY="0dp" />
 
     <EditText
         android:id="@+id/editTextText"
