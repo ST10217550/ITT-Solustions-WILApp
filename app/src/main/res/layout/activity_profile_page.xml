@@ -1,9 +1,130 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ProfilePage">
+    android:orientation="vertical"
+    android:padding="16dp">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <EditText
+        android:id="@+id/editFirstName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="First Name"
+        android:enabled="false"/>
+
+    <EditText
+        android:id="@+id/regSurname"
+        android:layout_width="match_parent"
+        android:layout_height="57dp"
+        android:background="#F3EEF4"
+        android:enabled="false"
+        android:hint="Surname"
+        android:inputType="text"
+        android:textColorHint="#9C27B0"
+        android:textSize="16sp" />
+
+    <EditText
+        android:id="@+id/regIDnum"
+        android:layout_width="match_parent"
+        android:layout_height="49dp"
+        android:background="#F3EEF4"
+        android:enabled="false"
+        android:hint="ID Number"
+        android:inputType="number"
+        android:textColorHint="#9C27B0"
+        android:textSize="16sp" />
+
+    <EditText
+        android:id="@+id/eTextEmail"
+        android:layout_width="match_parent"
+        android:layout_height="61dp"
+        android:enabled="false"
+        android:hint="Email"
+        android:inputType="text"
+        android:textColor="#000000"
+        android:textColorHint="#9C27B0"
+        android:textSize="16sp" />
+
+    <EditText
+        android:id="@+id/addres1"
+        android:layout_width="match_parent"
+        android:layout_height="53dp"
+        android:background="#F3EEF4"
+        android:enabled="false"
+        android:hint="Address Line 1"
+        android:inputType="text"
+        android:textColorHint="#9C27B0"
+        android:textSize="16sp" />
+
+    <EditText
+        android:id="@+id/addres2"
+        android:layout_width="match_parent"
+        android:layout_height="66dp"
+        android:background="#F3EEF4"
+        android:enabled="false"
+        android:hint="Address Line 2"
+        android:inputType="text"
+        android:textColorHint="#9C27B0"
+        android:textSize="16sp" />
+
+    <EditText
+        android:id="@+id/fileNum"
+        android:layout_width="match_parent"
+        android:layout_height="51dp"
+        android:background="#F3EEF4"
+        android:enabled="false"
+        android:hint="Patient File No"
+        android:inputType="text"
+        android:textColorHint="#9C27B0"
+        android:textSize="16sp" />
+
+    <Spinner
+        android:id="@+id/illness"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#F3EEF4"/>
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="GENDER:"
+        android:textColor="#9C27B0"
+        android:textSize="16sp"/>
+
+    <RadioButton
+        android:id="@+id/femaleBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="FEMALE"
+        android:textColor="#9C27B0"
+        android:textSize="16sp"/>
+
+    <RadioButton
+        android:id="@+id/maleBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="MALE"
+        android:textColor="#9C27B0"
+        android:textSize="16sp"/>
+
+    <Button
+        android:id="@+id/btnEdit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Edit"/>
+
+    <Button
+        android:id="@+id/btnSave"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Save"
+        android:visibility="gone"/>
+
+    <Button
+        android:id="@+id/btnLogOut"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Log Out"/>
+</LinearLayout>

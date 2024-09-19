@@ -14,6 +14,10 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -32,6 +36,9 @@ public class GetDatePage extends AppCompatActivity {
     private TextView showDetails;
     private HashMap<String, String> appointments = new HashMap<>();
 
+    private DatabaseReference databaseRef;
+    private FirebaseAuth auth;
+
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +55,11 @@ public class GetDatePage extends AppCompatActivity {
 
 
         calendar = Calendar.getInstance();
+
+        auth = FirebaseAuth.getInstance();
+        String userId = auth.getCurrentUser().getUid(); // Get the currently logged-in user's ID
+        databaseRef = FirebaseDatabase.getInstance().getReference("appointments").child(userId); // Appointments for the specific user
+
 
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                 R.array.type, android.R.layout.simple_spinner_item);
@@ -120,6 +132,8 @@ public class GetDatePage extends AppCompatActivity {
         calendar.set(Calendar.HOUR_OF_DAY, selectedHour);
         calendar.set(Calendar.MINUTE, selectedMin);
 
+        String appointmentId = databaseRef.push().getKey();
+
         // Format the selected date and time
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
         SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.US);
@@ -144,7 +158,22 @@ public class GetDatePage extends AppCompatActivity {
 
         Toast.makeText(this, "Appointment scheduled on " + calendar.getTime().toString(), Toast.LENGTH_SHORT).show();
 
+        if (appointmentId != null) {
+            databaseRef.child(appointmentId).setValue(appointmentDetails)
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            Toast.makeText(GetDatePage.this, "Appointment saved successfully!", Toast.LENGTH_SHORT).show();
+                            String appointmentInfo = "Scheduled Appointment: " + new SimpleDateFormat("EEE, MMM dd, yyyy 'at' hh:mm a", Locale.US).format(calendar.getTime());
+                            showDetails.setText(appointmentInfo);
+                        } else {
+                            Toast.makeText(GetDatePage.this, "Failed to save appointment.", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        }
+
+
     }
+
 }
 
 
