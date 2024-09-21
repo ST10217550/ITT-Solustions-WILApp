@@ -1,17 +1,28 @@
 package com.example.wilproject;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.CalendarView;
 import android.widget.DatePicker;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -28,10 +39,13 @@ public class ReschedulePage extends AppCompatActivity {
     private Button reSchedule;
     private int selectedhrs;
     private int selectedmin;
-
+    private TextView preAppointment;
     private int selectedYear;
     private int selectedMonth;
     private int selectedDay;
+    private DatabaseReference databaseRef;
+    private FirebaseAuth auth;
+    private String appointmentId;
 
 
     @SuppressLint("MissingInflatedId")
@@ -45,6 +59,7 @@ public class ReschedulePage extends AppCompatActivity {
         newshowDetails = findViewById(R.id.reDetails);
         reSchedule = findViewById(R.id.rescheduleBtn);
         calendarView = findViewById(R.id.calendarView3);
+        preAppointment = findViewById(R.id.preAppointDetails);
 
         calander = calander.getInstance();
 
@@ -52,6 +67,19 @@ public class ReschedulePage extends AppCompatActivity {
         selectedMonth = calander.get(Calendar.MONTH) + 1;
         selectedDay = calander.get(Calendar.DAY_OF_MONTH);
 
+        auth = FirebaseAuth.getInstance();
+        String userId = auth.getCurrentUser().getUid(); // Get the currently logged-in user's ID
+        databaseRef = FirebaseDatabase.getInstance().getReference("appointments").child(userId);
+
+        appointmentId = getStoredAppointmentId();
+        if (appointmentId == null) {
+            Toast.makeText(this, "No appointment ID found!", Toast.LENGTH_SHORT).show();
+            finish(); // Close the activity
+            return;
+        }
+
+        Log.d("ReschedulePage", "Appointment ID: " + appointmentId);
+        fetchCurrentAppointment();
 
         initDatePicker();
         dateBtn.setOnClickListener(v -> {
@@ -88,6 +116,8 @@ public class ReschedulePage extends AppCompatActivity {
             updateDetails();
             updateCalendarView();
         });
+
+
 
     }
 
@@ -126,6 +156,8 @@ public class ReschedulePage extends AppCompatActivity {
         ReschDate.getDatePicker().setMinDate(calander.getTimeInMillis()+86400000);
     }
 
+
+
     private void initTimePicker(){
         TimePickerDialog.OnTimeSetListener timeSetListener = new TimePickerDialog.OnTimeSetListener() {
             @Override
@@ -140,5 +172,65 @@ public class ReschedulePage extends AppCompatActivity {
         int style = AlertDialog.THEME_HOLO_DARK;
         ReschTime = new TimePickerDialog(this, style, timeSetListener, hrs, min, true);
 
+    }
+
+    private String getStoredAppointmentId() {
+        SharedPreferences sharedPreferences = getSharedPreferences("AppointmentPrefs", MODE_PRIVATE);
+        return sharedPreferences.getString("appointmentId", null); // Default is null if not found
+    }
+
+
+    private void fetchCurrentAppointment() {
+        databaseRef.child(appointmentId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    String date = snapshot.child("date").getValue(String.class);
+                    String time = snapshot.child("time").getValue(String.class);
+
+                    // Parse the fetched date and time
+                    String[] dateParts = date.split("-");
+                    selectedYear = Integer.parseInt(dateParts[0]);
+                    selectedMonth = Integer.parseInt(dateParts[1]) - 1; // Month is zero-based
+                    selectedDay = Integer.parseInt(dateParts[2]);
+
+                    String[] timeParts = time.split(":");
+                    selectedhrs = Integer.parseInt(timeParts[0]);
+                    selectedmin = Integer.parseInt(timeParts[1]);
+
+                    // Update UI with current details
+
+                    String formattedDate = String.format("Selected Date: %02d/%02d/%d", selectedDay, selectedMonth, selectedYear);
+                    String formattedTime = String.format("Selected Time: %02d:%02d", selectedhrs, selectedmin);
+
+                    // Update the TextView with both date and time
+                    preAppointment.setText(formattedDate + "\n" + formattedTime);
+                    updateCalendarView();
+                } else {
+                    Toast.makeText(ReschedulePage.this, "Appointment not found", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(ReschedulePage.this, "Failed to fetch appointment", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void updateAppointment() {
+        String newDate = String.format("%04d-%02d-%02d", selectedYear, selectedMonth + 1, selectedDay);
+        String newTime = String.format("%02d:%02d", selectedhrs, selectedmin);
+
+        // Update the appointment details in Firebase
+        databaseRef.child(appointmentId).child("date").setValue(newDate);
+        databaseRef.child(appointmentId).child("time").setValue(newTime)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Toast.makeText(ReschedulePage.this, "Appointment updated successfully!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(ReschedulePage.this, "Failed to update appointment.", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 }

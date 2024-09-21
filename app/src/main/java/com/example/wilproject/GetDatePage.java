@@ -4,7 +4,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
 import android.app.TimePickerDialog;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -115,6 +117,13 @@ public class GetDatePage extends AppCompatActivity {
         schedule.setOnClickListener(v -> scheduleAppointment(daysToAdd));
     }
 
+    private void storeAppointmentId(String appointmentId) {
+        SharedPreferences sharedPreferences = getSharedPreferences("AppointmentPrefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("appointmentId", appointmentId);
+        editor.apply();
+    }
+
     private void scheduleAppointment(int daysToAdd) {
         calendar = Calendar.getInstance(); // Reset to current date
         calendar.add(Calendar.DAY_OF_MONTH, daysToAdd);
@@ -146,6 +155,31 @@ public class GetDatePage extends AppCompatActivity {
             return;
         }
 
+        if (appointmentId != null) {
+
+            storeAppointmentId(appointmentId);
+            // Log the appointment ID for debugging purposes
+            Log.d("Appointment ID", "Generated ID: " + appointmentId);
+
+            // Store appointment details in Firebase
+            HashMap<String, String> appointmentData = new HashMap<>();
+            appointmentData.put("date", new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(calendar.getTime()));
+            appointmentData.put("time", new SimpleDateFormat("HH:mm", Locale.US).format(calendar.getTime()));
+            appointmentData.put("details", "Scheduled Appointment: " + new SimpleDateFormat("EEE, MMM dd, yyyy 'at' hh:mm a", Locale.US).format(calendar.getTime()));
+
+            databaseRef.child(appointmentId).setValue(appointmentData)
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            Log.d("Firebase", "Appointment saved successfully with ID: " + appointmentId);
+                            Toast.makeText(GetDatePage.this, "Appointment saved successfully!", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(GetDatePage.this, "Failed to save appointment.", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        } else {
+            Toast.makeText(this, "Failed to generate appointment ID.", Toast.LENGTH_SHORT).show();
+
+        }
         // Book the appointment
         appointments.put(selectedDate, selectedTime);
 
@@ -157,20 +191,6 @@ public class GetDatePage extends AppCompatActivity {
         showDetails.setText(appointmentDetails);
 
         Toast.makeText(this, "Appointment scheduled on " + calendar.getTime().toString(), Toast.LENGTH_SHORT).show();
-
-        if (appointmentId != null) {
-            databaseRef.child(appointmentId).setValue(appointmentDetails)
-                    .addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            Toast.makeText(GetDatePage.this, "Appointment saved successfully!", Toast.LENGTH_SHORT).show();
-                            String appointmentInfo = "Scheduled Appointment: " + new SimpleDateFormat("EEE, MMM dd, yyyy 'at' hh:mm a", Locale.US).format(calendar.getTime());
-                            showDetails.setText(appointmentInfo);
-                        } else {
-                            Toast.makeText(GetDatePage.this, "Failed to save appointment.", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-        }
-
 
     }
 
