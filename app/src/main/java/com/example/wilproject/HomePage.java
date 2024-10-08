@@ -7,6 +7,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+
 public class HomePage extends AppCompatActivity {
 
     @Override
@@ -15,6 +17,8 @@ public class HomePage extends AppCompatActivity {
         setContentView(R.layout.activity_home_page);
 
         CardView profile = findViewById(R.id.profile);
+
+
         profile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

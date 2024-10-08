@@ -82,7 +82,7 @@
 
 
     <CalendarView
-        android:id="@+id/calendarView"
+        android:id="@+id/calendarViewTrack"
         android:layout_width="410dp"
         android:layout_height="256dp"
         android:layout_marginTop="8dp"
@@ -136,7 +136,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.069"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/calendarView" />
+        app:layout_constraintTop_toBottomOf="@+id/calendarViewTrack" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

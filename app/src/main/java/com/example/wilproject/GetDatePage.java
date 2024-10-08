@@ -1,5 +1,6 @@
 package com.example.wilproject;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
@@ -7,6 +8,7 @@ import android.app.TimePickerDialog;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -16,6 +18,8 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationBarView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -41,6 +45,8 @@ public class GetDatePage extends AppCompatActivity {
     private DatabaseReference databaseRef;
     private FirebaseAuth auth;
 
+    BottomNavigationView bottomNavigationView;
+
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,11 +54,23 @@ public class GetDatePage extends AppCompatActivity {
         setContentView(R.layout.activity_get_date_page);
 
         illnesses = findViewById(R.id.illnesses);
-        calendarView = findViewById(R.id.calendarView);
+        calendarView = findViewById(R.id.calendarViewTrack);
         time = findViewById(R.id.Timebtn);
         schedule = findViewById(R.id.submitBtn);
         showDetails = findViewById(R.id.showAppoimentDetails);
         schedule = findViewById(R.id.submitBtn);
+        bottomNavigationView = findViewById(R.id.bottomMenu);
+
+        /*bottomNavigationView.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                switch (item.getItemId())
+                {
+                    case R.id.home:
+                        Toast.makeText(GetDatePage.this ,)
+                }
+            }
+        });*/
 
 
 
