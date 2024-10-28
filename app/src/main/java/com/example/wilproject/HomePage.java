@@ -11,6 +11,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class HomePage extends AppCompatActivity {
 
+    private String IDNumb;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -23,6 +24,7 @@ public class HomePage extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(HomePage.this, ProfilePage.class);
+                IDNumb = getIntent().getStringExtra("IDNumb");
                 startActivity(intent);
             }
         });
@@ -32,6 +34,7 @@ public class HomePage extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(HomePage.this, GetDatePage.class);
+                //IDNumb = getIntent().getStringExtra("IDNumb");
                 startActivity(intent);
             }
         });
@@ -41,6 +44,7 @@ public class HomePage extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(HomePage.this, ReschedulePage.class);
+                //IDNumb = getIntent().getStringExtra("IDNumb");
                 startActivity(intent);
             }
         });
@@ -50,6 +54,7 @@ public class HomePage extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(HomePage.this, TrackDatesPage.class);
+                //IDNumb = getIntent().getStringExtra("IDNumb");
                 startActivity(intent);
             }
         });

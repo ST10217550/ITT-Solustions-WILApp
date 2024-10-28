@@ -1,130 +1,246 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
+    tools:context=".ProfilePage">
 
-    <EditText
-        android:id="@+id/editFirstName"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="First Name"
-        android:enabled="false"/>
 
-    <EditText
-        android:id="@+id/regSurname"
+    <ScrollView
+        android:id="@+id/scrollView2"
         android:layout_width="match_parent"
-        android:layout_height="57dp"
-        android:background="#F3EEF4"
-        android:enabled="false"
-        android:hint="Surname"
-        android:inputType="text"
-        android:textColorHint="#9C27B0"
-        android:textSize="16sp" />
+        android:layout_height="769dp"
+        android:layout_below="@+id/viewHeader">
 
-    <EditText
-        android:id="@+id/regIDnum"
-        android:layout_width="match_parent"
-        android:layout_height="49dp"
-        android:background="#F3EEF4"
-        android:enabled="false"
-        android:hint="ID Number"
-        android:inputType="number"
-        android:textColorHint="#9C27B0"
-        android:textSize="16sp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/viewHeader"
+            android:orientation="vertical">
 
-    <EditText
-        android:id="@+id/eTextEmail"
-        android:layout_width="match_parent"
-        android:layout_height="61dp"
-        android:enabled="false"
-        android:hint="Email"
-        android:inputType="text"
-        android:textColor="#000000"
-        android:textColorHint="#9C27B0"
-        android:textSize="16sp" />
+            <View
+                android:id="@+id/viewHeader"
+                android:layout_width="match_parent"
+                android:layout_height="170dp"
+                android:background="@drawable/topview" />
 
-    <EditText
-        android:id="@+id/addres1"
-        android:layout_width="match_parent"
-        android:layout_height="53dp"
-        android:background="#F3EEF4"
-        android:enabled="false"
-        android:hint="Address Line 1"
-        android:inputType="text"
-        android:textColorHint="#9C27B0"
-        android:textSize="16sp" />
 
-    <EditText
-        android:id="@+id/addres2"
-        android:layout_width="match_parent"
-        android:layout_height="66dp"
-        android:background="#F3EEF4"
-        android:enabled="false"
-        android:hint="Address Line 2"
-        android:inputType="text"
-        android:textColorHint="#9C27B0"
-        android:textSize="16sp" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="General infomation"
+                android:textAlignment="center"
+                android:textColor="@color/purple"
+                android:textSize="20sp" />
 
-    <EditText
-        android:id="@+id/fileNum"
-        android:layout_width="match_parent"
-        android:layout_height="51dp"
-        android:background="#F3EEF4"
-        android:enabled="false"
-        android:hint="Patient File No"
-        android:inputType="text"
-        android:textColorHint="#9C27B0"
-        android:textSize="16sp" />
+            <TextView
+                android:id="@+id/nameTxt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Name:"
+                android:textAlignment="center"
+                android:textSize="20sp" />
 
-    <Spinner
-        android:id="@+id/illness"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#F3EEF4"/>
+            <TextView
+                android:id="@+id/surnameTxt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Surname"
+                android:textAlignment="center"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/idNumtxt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ID Number"
+                android:textAlignment="center"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/emailTxt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Email"
+                android:textAlignment="center"
+                android:textSize="20sp" />
+
+            <Button
+                android:id="@+id/DateBtn"
+                style="?android:spinnerStyle"
+                android:layout_width="182dp"
+                android:layout_height="48dp"
+                android:text="Date of Birth"
+                android:textColor="#090909"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.807"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/preAppointDetails" />
+
+
+            <EditText
+                android:id="@+id/phoneNumb"
+                android:layout_width="274dp"
+                android:layout_height="50dp"
+                android:hint="Phone Number"
+                android:inputType="text" />
+
+
+            <RadioGroup
+                android:id="@+id/gender"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <RadioButton
+                    android:id="@+id/femaleBtn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Female" />
+
+                <RadioButton
+                    android:id="@+id/maleBtn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Male" />
+            </RadioGroup>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Address infomation"
+                android:textAlignment="center"
+                android:textColor="@color/purple"
+                android:textSize="20sp" />
+
+            <EditText
+                android:id="@+id/address"
+                android:layout_width="274dp"
+                android:layout_height="50dp"
+                android:hint="Surname"
+                android:inputType="text" />
+
+            <EditText
+                android:id="@+id/city"
+                android:layout_width="274dp"
+                android:layout_height="50dp"
+                android:hint="City"
+                android:inputType="text" />
+
+            <EditText
+                android:id="@+id/state"
+                android:layout_width="274dp"
+                android:layout_height="50dp"
+                android:hint="State"
+                android:inputType="text" />
+
+            <EditText
+                android:id="@+id/zipCode"
+                android:layout_width="274dp"
+                android:layout_height="50dp"
+                android:hint="ZIP Code"
+                android:inputType="text" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Medical infomation"
+                android:textAlignment="center"
+                android:textColor="@color/purple"
+                android:textSize="20sp" />
+
+            <EditText
+                android:id="@+id/allergies"
+                android:layout_width="274dp"
+                android:layout_height="50dp"
+                android:hint="Allergies"
+                android:inputType="text" />
+
+            <Spinner
+                android:id="@+id/illnesses"
+                android:layout_width="402dp"
+                android:layout_height="52dp"
+                android:layout_marginTop="20dp"
+                android:background="@android:drawable/btn_dropdown"
+                android:entries="@array/type"
+                android:textAlignment="center"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textView2" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Illneses:"
+                android:textAlignment="center"
+                android:textSize="20sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Next of Kin"
+                android:textAlignment="center"
+                android:textColor="@color/purple"
+                android:textSize="20sp" />
+
+            <EditText
+                android:id="@+id/nextName"
+                android:layout_width="274dp"
+                android:layout_height="50dp"
+                android:hint="Name "
+                android:inputType="text" />
+
+            <EditText
+                android:id="@+id/nextRelation"
+                android:layout_width="274dp"
+                android:layout_height="50dp"
+                android:hint="Relationship "
+                android:inputType="text" />
+
+            <EditText
+                android:id="@+id/nextphoneNumb"
+                android:layout_width="274dp"
+                android:layout_height="50dp"
+                android:hint="Phone Number"
+                android:inputType="text" />
+
+            <EditText
+                android:id="@+id/nextEmail"
+                android:layout_width="274dp"
+                android:layout_height="50dp"
+                android:hint="Email "
+                android:inputType="text" />
+
+            <Button
+                android:id="@+id/saveData"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Save" />
+
+            <Button
+                android:id="@+id/homeBtn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Home" />
+
+
+        </LinearLayout>
+    </ScrollView>
 
     <TextView
-        android:id="@+id/textView4"
+        android:id="@+id/textView3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="GENDER:"
-        android:textColor="#9C27B0"
-        android:textSize="16sp"/>
+        android:text="Profile"
+        android:textColor="#FAF9F9"
+        android:textSize="34sp"
+        app:layout_anchor="@+id/viewHeader"
+        app:layout_anchorGravity="center"
+        app:layout_constraintBottom_toBottomOf="@+id/viewHeader"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/viewHeader" />
 
-    <RadioButton
-        android:id="@+id/femaleBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="FEMALE"
-        android:textColor="#9C27B0"
-        android:textSize="16sp"/>
 
-    <RadioButton
-        android:id="@+id/maleBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="MALE"
-        android:textColor="#9C27B0"
-        android:textSize="16sp"/>
 
-    <Button
-        android:id="@+id/btnEdit"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Edit"/>
-
-    <Button
-        android:id="@+id/btnSave"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Save"
-        android:visibility="gone"/>
-
-    <Button
-        android:id="@+id/btnLogOut"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Log Out"/>
-</LinearLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

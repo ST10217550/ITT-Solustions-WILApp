@@ -24,6 +24,7 @@ public class LoginPage extends AppCompatActivity {
     private Button RegBtn1;
     private EditText username;
     private EditText passwordLog;
+    private String IDNumb;
     FirebaseAuth mAuth;
 
 
@@ -65,8 +66,17 @@ public class LoginPage extends AppCompatActivity {
                             @Override
                             public void onComplete(@NonNull Task<AuthResult> task) {
                                 if (task.isSuccessful()) {
-                                    Toast.makeText(getApplicationContext(), "Login successful!", Toast.LENGTH_SHORT).show();
+                                    FirebaseUser currentUser = mAuth.getCurrentUser();
+                                    assert currentUser != null;
+                                    String userId = currentUser.getUid();
+
+
+
+
+
+                                    Toast.makeText(LoginPage.this, "Login successful!", Toast.LENGTH_SHORT).show();
                                     Intent intent = new Intent(LoginPage.this, HomePage.class);
+                                    IDNumb = getIntent().getStringExtra("IDNumb");
                                     startActivity(intent);
                                     finish();
                                 } else {

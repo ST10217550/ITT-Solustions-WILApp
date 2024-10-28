@@ -3,6 +3,8 @@ package com.example.wilproject;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -11,7 +13,9 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -22,150 +26,203 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.Calendar;
+
 public class ProfilePage extends AppCompatActivity {
-    FirebaseAuth auth;
-    DatabaseReference usersRef;
-    FirebaseUser user;
 
-    Button btnEdit, btnSave, btnLogOut;
-    EditText editFirstName, regSurname, regIDnum, eTextEmail, addres1, addres2, fileNum;
-    Spinner illness;
-    RadioButton femaleBtn, maleBtn;
 
+    private TextView nameTxt, surnameTxt, idNumTxt, emailTxt;
+    private EditText phoneNumb, address, city, state, zipCode, allergies, nextName, nextRelation, nextphoneNumb, nextEmail;
+    private Button saveDataBtn, homeBtn, dateOfBirth;
+    private RadioGroup genderGroup;
+    private Spinner illnessesSpinner;
+
+    private DatabaseReference userRef;
+    private DatabaseReference userProfileRef;
+    private String IDNumb;
+
+    private FirebaseAuth auth;
+    private Calendar selectedDate;
+
+
+    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile_page);
 
-        auth = FirebaseAuth.getInstance();
-        user = auth.getCurrentUser();
-        usersRef = FirebaseDatabase.getInstance().getReference("Users");
+        nameTxt = findViewById(R.id.nameTxt);
+        surnameTxt = findViewById(R.id.surnameTxt);
+        idNumTxt = findViewById(R.id.idNumtxt);
+        emailTxt = findViewById(R.id.emailTxt);
+        phoneNumb = findViewById(R.id.phoneNumb);
+        address = findViewById(R.id.address);
+        city = findViewById(R.id.city);
+        state = findViewById(R.id.state);
+        zipCode = findViewById(R.id.zipCode);
+        allergies = findViewById(R.id.allergies);
+        nextName = findViewById(R.id.nextName);
+        nextRelation = findViewById(R.id.nextRelation);
+        nextphoneNumb = findViewById(R.id.nextphoneNumb);
+        nextEmail = findViewById(R.id.nextEmail);
+        genderGroup = findViewById(R.id.gender);
+        illnessesSpinner = findViewById(R.id.illnesses);
+        saveDataBtn = findViewById(R.id.saveData);
+        homeBtn = findViewById(R.id.homeBtn);
+        dateOfBirth = findViewById(R.id.DateBtn);
 
-        if (user == null) {
-            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-            startActivity(intent);
-            finish();
+        auth = FirebaseAuth.getInstance();
+
+        FirebaseUser currentUser = auth.getCurrentUser();
+        if (currentUser == null) {
+            Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
+            finish();  // Close the activity or redirect to login page
             return;
         }
 
-        // Initialize UI components
-        editFirstName = findViewById(R.id.editFirstName);
-        regSurname = findViewById(R.id.regSurname);
-        regIDnum = findViewById(R.id.regIDnum);
-        eTextEmail = findViewById(R.id.eTextEmail);
-        addres1 = findViewById(R.id.addres1);
-        addres2 = findViewById(R.id.addres2);
-        fileNum = findViewById(R.id.fileNum);
-        illness = findViewById(R.id.illness);
-        femaleBtn = findViewById(R.id.femaleBtn);
-        maleBtn = findViewById(R.id.maleBtn);
-        btnEdit = findViewById(R.id.btnEdit);
-        btnSave = findViewById(R.id.btnSave);
-        btnLogOut = findViewById(R.id.btnLogOut);
+        // Set up Firebase Database reference
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        String userId = currentUser.getUid();
+        userRef = database.getReference("users").child(userId);
+        userProfileRef = database.getReference("userProfile").child(userId); // Reference to user's profile
 
-        // Set up Spinner with options
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
-                this,
-                R.array.type,
-                android.R.layout.simple_spinner_item
-        );
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        illness.setAdapter(adapter);
+        // Load the user's profile data
+        loadUserProfileData();
 
-        // Load user profile data
-        loadUserProfile();
+        selectedDate = Calendar.getInstance();
+        dateOfBirth.setOnClickListener(v -> showDatePickerDialog());
 
-        // Edit button click handler
-        btnEdit.setOnClickListener(v -> {
-            editFirstName.setEnabled(true);
-            regSurname.setEnabled(true);
-            regIDnum.setEnabled(true);
-            eTextEmail.setEnabled(true);
-            addres1.setEnabled(true);
-            addres2.setEnabled(true);
-            fileNum.setEnabled(true);
-            btnSave.setVisibility(View.VISIBLE);
-            btnEdit.setVisibility(View.GONE);
-        });
+        // Set up save button listener to save updated user data
+        saveDataBtn.setOnClickListener(v -> saveUserProfileData());
 
-        // Save button click handler
-        btnSave.setOnClickListener(v -> {
-            saveUserProfile();
-        });
-
-        // Log Out button click handler
-        btnLogOut.setOnClickListener(v -> {
-            auth.signOut();
-            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-            startActivity(intent);
-            finish();
+        // Home button to navigate to the home page
+        homeBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(ProfilePage.this, HomePage.class);
+                startActivity(intent);
+            }
         });
     }
 
-    private void loadUserProfile() {
-        String userId = user.getUid();
-        usersRef.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
+    private void showDatePickerDialog() {
+        int year = selectedDate.get(Calendar.YEAR);
+        int month = selectedDate.get(Calendar.MONTH);
+        int day = selectedDate.get(Calendar.DAY_OF_MONTH);
+
+        DatePickerDialog datePickerDialog = new DatePickerDialog(this, (view, year1, monthOfYear, dayOfMonth) -> {
+            selectedDate.set(year1, monthOfYear, dayOfMonth);
+            String dob = dayOfMonth + "/" + (monthOfYear + 1) + "/" + year1;
+            dateOfBirth.setText(dob); // Set the selected date on button text
+        }, year, month, day);
+
+        datePickerDialog.show();
+    }
+
+
+    private void loadUserProfileData() {
+        userProfileRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
-                    UserProfileC userProfile = dataSnapshot.getValue(UserProfileC.class);
-                    if (userProfile != null) {
-                        editFirstName.setText(userProfile.firstName);
-                        regSurname.setText(userProfile.lastName);
-                        regIDnum.setText(userProfile.idNumber);
-                        eTextEmail.setText(userProfile.email);
-                        addres1.setText(userProfile.address1);
-                        addres2.setText(userProfile.address2);
-                        fileNum.setText(userProfile.fileNumber);
+                    // Retrieve user information from Firebase
+                    String name = dataSnapshot.child("name").getValue(String.class);
+                    String surname = dataSnapshot.child("surname").getValue(String.class);
+                    String idNumber = dataSnapshot.child("idnumb").getValue(String.class);
+                    String email = dataSnapshot.child("email").getValue(String.class);
 
-                        // Set Spinner and RadioButton values
-                        ArrayAdapter<CharSequence> adapter = (ArrayAdapter<CharSequence>) illness.getAdapter();
-                        int illnessPosition = adapter.getPosition(userProfile.illness);
-                        illness.setSelection(illnessPosition);
+                    // Set retrieved values in TextViews
+                    nameTxt.setText(name);
+                    surnameTxt.setText(surname);
+                    idNumTxt.setText(idNumber);
+                    emailTxt.setText(email);
 
-                        // Example for RadioButtons
-                        if ("Female".equals(userProfile.gender)) {
-                            femaleBtn.setChecked(true);
-                        } else if ("Male".equals(userProfile.gender)) {
-                            maleBtn.setChecked(true);
+                    // Load other data if available
+                    phoneNumb.setText(dataSnapshot.child("phone").getValue(String.class));
+                    address.setText(dataSnapshot.child("address").getValue(String.class));
+                    city.setText(dataSnapshot.child("city").getValue(String.class));
+                    state.setText(dataSnapshot.child("state").getValue(String.class));
+                    zipCode.setText(dataSnapshot.child("zipCode").getValue(String.class));
+                    allergies.setText(dataSnapshot.child("allergies").getValue(String.class));
+
+                    DataSnapshot nextOfKin = dataSnapshot.child("nextOfKin");
+                    if (nextOfKin.exists()) {
+                        nextName.setText(nextOfKin.child("name").getValue(String.class));
+                        nextRelation.setText(nextOfKin.child("relation").getValue(String.class));
+                        nextphoneNumb.setText(nextOfKin.child("phone").getValue(String.class));
+                        nextEmail.setText(nextOfKin.child("email").getValue(String.class));
+                    }
+
+                    // Set gender
+                    String gender = dataSnapshot.child("gender").getValue(String.class);
+                    if (gender != null) {
+                        if (gender.equalsIgnoreCase("Male")) {
+                            genderGroup.check(R.id.femaleBtn);
+                        } else if (gender.equalsIgnoreCase("Female")) {
+                            genderGroup.check(R.id.maleBtn);
+                        }
+                    }
+
+                    // Set illnesses if available
+                    String illness = dataSnapshot.child("illness").getValue(String.class);
+                    if (illness != null) {
+                        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(ProfilePage.this,
+                                R.array.type, android.R.layout.simple_spinner_item);
+                        illnessesSpinner.setAdapter(adapter);
+                        if (illness != null) {
+                            int spinnerPosition = adapter.getPosition(illness);
+                            illnessesSpinner.setSelection(spinnerPosition);
                         }
                     }
                 }
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(ProfilePage.this, "Failed to load profile.", Toast.LENGTH_SHORT).show();
+            public void onCancelled(@NonNull DatabaseError error) {
+                // Handle possible errors
+                Toast.makeText(ProfilePage.this, "Failed to load data", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    private void saveUserProfile() {
-        String firstName = editFirstName.getText().toString().trim();
-        String surname = regSurname.getText().toString().trim();
-        String idNumber = regIDnum.getText().toString().trim();
-        String email = eTextEmail.getText().toString().trim();
-        String address1 = addres1.getText().toString().trim();
-        String address2 = addres2.getText().toString().trim();
-        String fileNumber = fileNum.getText().toString().trim();
-        String illnessText = illness.getSelectedItem().toString();
-        String gender = femaleBtn.isChecked() ? "Female" : "Male";
+    // Method to save user's updated profile data
+    private void saveUserProfileData() {
+        // Collect data from input fields
+        String phone = phoneNumb.getText().toString();
+        String userAddress = address.getText().toString();
+        String userCity = city.getText().toString();
+        String userState = state.getText().toString();
+        String zip = zipCode.getText().toString();
+        String allergyInfo = allergies.getText().toString();
+        String kinName = nextName.getText().toString();
+        String kinRelation = nextRelation.getText().toString();
+        String kinPhone = nextphoneNumb.getText().toString();
+        String kinEmail = nextEmail.getText().toString();
+        String dob = dateOfBirth.getText().toString();
 
-        if (TextUtils.isEmpty(firstName) || TextUtils.isEmpty(surname) || TextUtils.isEmpty(email)) {
-            Toast.makeText(this, "Please fill all required fields.", Toast.LENGTH_SHORT).show();
-            return;
-        }
 
-        String userId = user.getUid();
-        UserProfileC userProfile = new UserProfileC(firstName, surname, idNumber, email, address1, address2, fileNumber, illnessText, gender);
-        usersRef.child(userId).setValue(userProfile)
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        Toast.makeText(ProfilePage.this, "Profile updated successfully.", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(ProfilePage.this, "Failed to update profile.", Toast.LENGTH_SHORT).show();
-                    }
-                });
 
+        int selectedGenderId = genderGroup.getCheckedRadioButtonId();
+        RadioButton selectedGender = findViewById(selectedGenderId);
+        String gender = selectedGender.getText().toString();
+
+        String illness = illnessesSpinner.getSelectedItem().toString();
+
+        // Save data to Firebase under the user's IDNumb path
+        userProfileRef.child("dateOfBirth").setValue(dob);
+        userProfileRef.child("phone").setValue(phone);
+        userProfileRef.child("address").setValue(userAddress);
+        userProfileRef.child("city").setValue(userCity);
+        userProfileRef.child("state").setValue(userState);
+        userProfileRef.child("zipCode").setValue(zip);
+        userProfileRef.child("allergies").setValue(allergyInfo);
+        userProfileRef.child("kinName").setValue(kinName);
+        userProfileRef.child("relationship").setValue(kinRelation);
+        userProfileRef.child("kinPhone").setValue(kinPhone);
+        userProfileRef.child("kinEmail").setValue(kinEmail);
+        userProfileRef.child("gender").setValue(gender);
+        userProfileRef.child("illnesses").setValue(illness);
+
+        Toast.makeText(ProfilePage.this, "Profile data saved", Toast.LENGTH_SHORT).show();
     }
 }

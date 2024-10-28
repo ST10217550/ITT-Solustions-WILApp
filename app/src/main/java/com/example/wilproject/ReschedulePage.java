@@ -2,12 +2,21 @@ package com.example.wilproject;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
 import android.annotation.SuppressLint;
+import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
+import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
@@ -46,6 +55,8 @@ public class ReschedulePage extends AppCompatActivity {
     private DatabaseReference databaseRef;
     private FirebaseAuth auth;
     private String appointmentId;
+
+    private static final String CHANNEL_ID = "appointment_channel";
 
 
     @SuppressLint("MissingInflatedId")
@@ -113,9 +124,18 @@ public class ReschedulePage extends AppCompatActivity {
 
 
         reSchedule.setOnClickListener(v -> {
+            if (appointmentId == null) {
+                Toast.makeText(ReschedulePage.this, "You have no appointment to reschedule!", Toast.LENGTH_SHORT).show();
+                return; // Prevent further execution if there is no appointment
+            }
+
+            // Proceed to update details and update the appointment
             updateDetails();
             updateCalendarView();
+            updateAppointment(); // Call the method to update the appointment in Firebase
+            createNotificationChannel();
         });
+
 
 
 
@@ -162,17 +182,25 @@ public class ReschedulePage extends AppCompatActivity {
         TimePickerDialog.OnTimeSetListener timeSetListener = new TimePickerDialog.OnTimeSetListener() {
             @Override
             public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                timeBtn.setText(hourOfDay + ":" + minute);
+                // Ensure hour is between 15 (3 PM) and 17 (5 PM)
+                if (hourOfDay < 15 || hourOfDay > 17) {
+                    Toast.makeText(ReschedulePage.this, "Please select a time between 3 PM and 5 PM.", Toast.LENGTH_SHORT).show();
+                    return; // Do not update the time if it's out of bounds
+                }
+                selectedhrs = hourOfDay;
+                selectedmin = (minute / 30) * 30; // Round to nearest 30 minutes
+                timeBtn.setText(String.format("%02d:%02d", selectedhrs, selectedmin));
             }
         };
+
         calander = calander.getInstance();
-        int hrs = calander.get(calander.HOUR);
-        int min = calander.get(calander.MINUTE);
+        int hrs = 15; // Default to 3 PM
+        int min = 0; // Default to 00 minutes
 
         int style = AlertDialog.THEME_HOLO_DARK;
         ReschTime = new TimePickerDialog(this, style, timeSetListener, hrs, min, true);
-
     }
+
 
     private String getStoredAppointmentId() {
         SharedPreferences sharedPreferences = getSharedPreferences("AppointmentPrefs", MODE_PRIVATE);
@@ -232,5 +260,38 @@ public class ReschedulePage extends AppCompatActivity {
                         Toast.makeText(ReschedulePage.this, "Failed to update appointment.", Toast.LENGTH_SHORT).show();
                     }
                 });
+    }
+
+    @SuppressLint({"ScheduleExactAlarm", "MissingPermission"})
+    private void sendRescheduleNotification(String date, String time) {
+        // Intent to open the ReschedulePage when the notification is tapped
+        Intent intent = new Intent(this, ReschedulePage.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        // Build the notification
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.notification_icon)
+                .setContentTitle("Appointment Rescheduled")
+                .setContentText("Your appointment has been rescheduled to " + date + " at " + time)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true);
+
+        // Show the notification
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+        notificationManager.notify(1, builder.build());
+    }
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = "Appointment Channel";
+            String description = "Channel for appointment notifications";
+            int importance = NotificationManager.IMPORTANCE_HIGH;
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
     }
 }

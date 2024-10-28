@@ -1,21 +1,32 @@
 package com.example.wilproject;
 
 public class UserProfile {
+    String IDNumb;
     String name;
     String surname;
     String email;
     String password;
-    String idNumber;
 
 
 
-    public UserProfile(String name, String surname, String email, String password, String idNumber) {
+
+    public UserProfile(String IDNumb, String name, String surname, String email, String password) {
+        this.IDNumb = IDNumb;
         this.name = name;
         this.surname = surname;
         this.email = email;
         this.password = password;
-        this.idNumber = idNumber;
+
     }
+
+    public String getIDNumb() {
+        return IDNumb;
+    }
+
+    public void setIDNumb(String IDNumb) {
+        this.IDNumb = IDNumb;
+    }
+
 
     public String getName() {
         return name;
@@ -49,13 +60,6 @@ public class UserProfile {
         this.password = password;
     }
 
-    public String getIdNumber() {
-        return idNumber;
-    }
-
-    public void setIdNumber(String idNumber) {
-        this.idNumber = idNumber;
-    }
 
 
     public UserProfile(){

@@ -20,6 +20,8 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.util.HashMap;
+
 public class RegisterPage extends AppCompatActivity {
 
     private EditText regName;
@@ -42,8 +44,6 @@ public class RegisterPage extends AppCompatActivity {
         setContentView(R.layout.activity_register_page);
 
 
-
-
         regName = findViewById(R.id.regName);
         regSurname = findViewById(R.id.regSurname);
         emailReg = findViewById(R.id.emailReg);
@@ -59,11 +59,13 @@ public class RegisterPage extends AppCompatActivity {
                 database = FirebaseDatabase.getInstance();
                 usersRef = database.getReference("users");
 
-                String emailText = emailReg.getText().toString();
-                String passwordText = passwordReg.getText().toString();
+                String IDNumb = idNum.getText().toString();
                 String firstName = regName.getText().toString();
                 String lastName = regSurname.getText().toString();
-                String idNumber = idNum.getText().toString();
+                String emailText = emailReg.getText().toString();
+                String passwordText = passwordReg.getText().toString();
+
+
 
 
                 if (TextUtils.isEmpty(emailText)) {
@@ -82,36 +84,45 @@ public class RegisterPage extends AppCompatActivity {
                 }
 
                 mAuth.createUserWithEmailAndPassword(emailText, passwordText).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                            @Override
-                            public void onComplete(@NonNull Task<AuthResult> task) {
-                                if (task.isSuccessful()) {
-                                    FirebaseUser user = mAuth.getCurrentUser();
-                                    if (user != null) {
-                                        String userId = user.getUid();
-                                        UserProfile userProfile = new UserProfile(idNumber, firstName, lastName, emailText, passwordText);
-                                        usersRef.child(userId).setValue(userProfile).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                    @Override
-                                                    public void onComplete(@NonNull Task<Void> task) {
-                                                        if (task.isSuccessful()) {
-                                                            Toast.makeText(RegisterPage.this, "Account created.",
-                                                                    Toast.LENGTH_SHORT).show();
-                                                            Intent intent = new Intent(RegisterPage.this, LoginPage.class);
-                                                            startActivity(intent);
-                                                            finish();
-                                                        } else {
-                                                            Toast.makeText(RegisterPage.this, "Failed to save user data.",
-                                                                    Toast.LENGTH_SHORT).show();
-                                                        }
-                                                    }
-                                                });
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            if (user != null) {
+                                String userId = user.getUid();
+
+                                // Create a HashMap to store user details
+                                HashMap<String, Object> userData = new HashMap<>();
+                                userData.put("IDNumb", IDNumb);
+                                userData.put("firstName", firstName);
+                                userData.put("lastName", lastName);
+                                userData.put("email", emailText);
+
+                                // Store user data in Firebase
+                                usersRef.child(userId).setValue(userData).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        if (task.isSuccessful()) {
+                                            Toast.makeText(RegisterPage.this, "Account created.",
+                                                    Toast.LENGTH_SHORT).show();
+                                            Intent intent = new Intent(RegisterPage.this, LoginPage.class);
+                                            intent.putExtra("IDNumb", IDNumb);
+                                            startActivity(intent);
+                                            finish();
+                                        } else {
+                                            Toast.makeText(RegisterPage.this, "Failed to save user data.",
+                                                    Toast.LENGTH_SHORT).show();
+                                        }
                                     }
-                                } else {
-                                    String errorMessage = task.getException() != null ? task.getException().getMessage() : "Authentication failed.";
-                                    Toast.makeText(RegisterPage.this, errorMessage,
-                                            Toast.LENGTH_SHORT).show();
-                                }
+                                });
                             }
-                        });
+                        } else {
+                            String errorMessage = task.getException() != null ? task.getException().getMessage() : "Authentication failed.";
+                            Toast.makeText(RegisterPage.this, errorMessage,
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
             }
         });
 

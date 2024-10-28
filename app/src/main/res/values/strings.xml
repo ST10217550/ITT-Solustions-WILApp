@@ -12,5 +12,10 @@
         <item>Epilepsy</item>
         <item>Arthitis</item>
         <item>TB</item>
+        <item>More Than 1</item>
+    </string-array>
+    <string-array name="gender">
+        <item>Female</item>
+        <item>male</item>
     </string-array>
 </resources>

@@ -10,13 +10,16 @@
         android:id="@+id/viewHeader"
         android:layout_width="0dp"
         android:layout_height="170dp"
-        android:background="@drawable/topview"/>
+        android:background="@drawable/topview"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 
     <EditText
         android:id="@+id/idNum"
         android:layout_width="408dp"
-        android:layout_height="39dp"
+        android:layout_height="50dp"
         android:hint="ID Number"
         android:inputType="text"
         app:layout_constraintBottom_toTopOf="@+id/regName"
@@ -28,7 +31,7 @@
     <EditText
         android:id="@+id/regName"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:layout_marginTop="21dp"
         android:hint="First Name"
         app:layout_constraintEnd_toEndOf="parent"
@@ -39,7 +42,7 @@
     <EditText
         android:id="@+id/regSurname"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:layout_marginTop="36dp"
         android:hint="Last Name"
         app:layout_constraintEnd_toEndOf="parent"
@@ -50,7 +53,7 @@
     <EditText
         android:id="@+id/emailReg"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:layout_marginTop="16dp"
         android:hint="Email"
         app:layout_constraintEnd_toEndOf="parent"
@@ -61,7 +64,7 @@
     <EditText
         android:id="@+id/passwordReg"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:layout_marginTop="28dp"
         android:hint="Password"
         android:inputType="textPassword"
