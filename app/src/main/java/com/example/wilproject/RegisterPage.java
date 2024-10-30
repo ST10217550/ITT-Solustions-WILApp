@@ -94,9 +94,10 @@ public class RegisterPage extends AppCompatActivity {
                                 // Create a HashMap to store user details
                                 HashMap<String, Object> userData = new HashMap<>();
                                 userData.put("IDNumb", IDNumb);
-                                userData.put("firstName", firstName);
-                                userData.put("lastName", lastName);
+                                userData.put("name", firstName);
+                                userData.put("surname", lastName);
                                 userData.put("email", emailText);
+                                userData.put("password", passwordText);
 
                                 // Store user data in Firebase
                                 usersRef.child(userId).setValue(userData).addOnCompleteListener(new OnCompleteListener<Void>() {

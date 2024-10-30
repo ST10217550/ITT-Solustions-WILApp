@@ -249,9 +249,26 @@ public class GetDatePage extends AppCompatActivity {
     }
 
     private void scheduleAppointment(int daysToAdd) {
-        calendar = Calendar.getInstance(); // Reset to current date
+        // Get the currently logged-in user's ID
+        String userId = auth.getCurrentUser().getUid();
+
+        if (userId == null) {
+            Toast.makeText(this, "User not logged in.", Toast.LENGTH_SHORT).show();
+            return; // Exit if user is not logged in
+        }
+
+        // Initialize calendar to today's date and clear time to midnight
+        calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+
+        Log.d("Debug", "Initial date (midnight): " + calendar.getTime().toString());
+
+        // Add the specified days to set the appointment date
         calendar.add(Calendar.DAY_OF_MONTH, daysToAdd);
-        showDetails = findViewById(R.id.showAppoimentDetails);
+        Log.d("Debug", "Date after adding days: " + calendar.getTime().toString());
 
         // Adjust the date if it falls on a weekend
         int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
@@ -261,13 +278,13 @@ public class GetDatePage extends AppCompatActivity {
             calendar.add(Calendar.DAY_OF_MONTH, 1); // Move to Monday
         }
 
+        Log.d("Debug", "Date after weekend adjustment: " + calendar.getTime().toString());
+
         // Set the selected time
         calendar.set(Calendar.HOUR_OF_DAY, selectedHour);
         calendar.set(Calendar.MINUTE, selectedMin);
 
-        UserProfile userProfile = new UserProfile();
-
-        String appointmentId = auth.getCurrentUser().getUid();
+        Log.d("Debug", "Final date with time: " + calendar.getTime().toString());
 
         // Format the selected date and time
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
@@ -275,47 +292,32 @@ public class GetDatePage extends AppCompatActivity {
         String selectedDate = dateFormat.format(calendar.getTime());
         String selectedTime = timeFormat.format(calendar.getTime());
 
-        // Check if the selected time slot is already booked
-        if (appointments.containsKey(selectedDate) && appointments.get(selectedDate).equals(selectedTime)) {
-            Toast.makeText(this, "This time slot is already booked. Please select a different time.", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        Log.d("Debug", "Formatted date: " + selectedDate + " and time: " + selectedTime);
 
-        if (appointmentId != null) {
+        // Get the selected illness
+        String selectedIllness = illnesses.getSelectedItem().toString();
 
-            storeAppointmentId(appointmentId);
-            Log.d("Appointment ID", appointmentId);
+        // Prepare data to be stored in Firebase
+        HashMap<String, String> appointmentData = new HashMap<>();
+        appointmentData.put("IDNumb", userId);
+        appointmentData.put("selectedDate", selectedDate);
+        appointmentData.put("time", selectedTime);
+        appointmentData.put("illness", selectedIllness);
+        appointmentData.put("status", status);
+        appointmentData.put("details", "Scheduled Appointment: " + new SimpleDateFormat("EEE, MMM dd, yyyy 'at' hh:mm a", Locale.US).format(calendar.getTime()));
 
-            // Get the selected illness
-            String selectedIllness = illnesses.getSelectedItem().toString();
-
-            // Prepare data to be stored in Firebase
-            HashMap<String, String> appointmentData = new HashMap<>();
-            appointmentData.put("IDNumb", appointmentId); // Store IDNumb
-            appointmentData.put("selectedDate", selectedDate); // Store the date
-            appointmentData.put("time", selectedTime); // Store the time
-            appointmentData.put("illness", selectedIllness); // Store the selected illness
-            appointmentData.put("status", status);
-            appointmentData.put("details", "Scheduled Appointment: " + new SimpleDateFormat("EEE, MMM dd, yyyy 'at' hh:mm a", Locale.US).format(calendar.getTime()));
-
-            // Store appointment details in Firebase
-            databaseRef.child(appointmentId).setValue(appointmentData)
-                    .addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            Log.d("Firebase", "Appointment saved successfully with ID: " + appointmentId);
-                            sendNotification("Appointment Scheduled", "Your appointment is scheduled for " + selectedDate + " at " + selectedTime);
-                            scheduleNotificationAlarm(daysToAdd - 3, selectedDate, selectedTime);
-                            Toast.makeText(GetDatePage.this, "Appointment saved successfully!", Toast.LENGTH_SHORT).show();
-                        } else {
-                            Toast.makeText(GetDatePage.this, "Failed to save appointment.", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-        } else {
-            Toast.makeText(this, "Failed to generate appointment ID.", Toast.LENGTH_SHORT).show();
-        }
-
-        // Book the appointment
-        appointments.put(selectedDate, selectedTime);
+        // Save appointment data under the user's ID in Firebase
+        databaseRef.setValue(appointmentData)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Log.d("Firebase", "Appointment saved successfully for user: " + userId);
+                        sendNotification("Appointment Scheduled", "Your appointment is scheduled for " + selectedDate + " at " + selectedTime);
+                        scheduleNotificationAlarm(daysToAdd - 3, selectedDate, selectedTime);
+                        Toast.makeText(GetDatePage.this, "Appointment saved successfully!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(GetDatePage.this, "Failed to save appointment.", Toast.LENGTH_SHORT).show();
+                    }
+                });
 
         // Update CalendarView to show the scheduled date
         calendarView.setDate(calendar.getTimeInMillis(), true, true);
@@ -326,6 +328,8 @@ public class GetDatePage extends AppCompatActivity {
 
         Toast.makeText(this, "Appointment scheduled on " + calendar.getTime().toString(), Toast.LENGTH_SHORT).show();
     }
+
+
 
     @SuppressLint("MissingPermission")
     private void createAppointmentNotification(String appointmentDetails) {
@@ -401,11 +405,7 @@ public class GetDatePage extends AppCompatActivity {
             }
         }
 
-
-
     }
-
-
 }
 
 

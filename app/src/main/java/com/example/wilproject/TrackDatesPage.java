@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.CalendarView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,6 +32,7 @@ public class TrackDatesPage extends AppCompatActivity {
     private Calendar calendar;
     private ArrayList<String> appointmentDates = new ArrayList<>(); // List to store all appointment dates
     private TextView appointmentsTextView;
+    private Map<String, String> appointmentDetailsMap = new HashMap<>();
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -39,14 +41,24 @@ public class TrackDatesPage extends AppCompatActivity {
         setContentView(R.layout.activity_track_dates_page);
 
         calendarView = findViewById(R.id.calendarViewTrack);
-        appointmentsTextView = findViewById(R.id.appoiments); // Reference to the TextView
+        appointmentsTextView = findViewById(R.id.appoiments);
 
         auth = FirebaseAuth.getInstance();
-        String userId = auth.getCurrentUser().getUid(); // Get the currently logged-in user's ID
+        String userId = auth.getCurrentUser().getUid();
         databaseRef = FirebaseDatabase.getInstance().getReference("appointments").child(userId);
 
         // Fetch all appointment dates from Firebase
         fetchAppointmentDates();
+
+        // Set up a listener to detect when the user selects a date
+        calendarView.setOnDateChangeListener((view, year, month, dayOfMonth) -> {
+            String selectedDate = String.format(Locale.US, "%04d-%02d-%02d", year, month + 1, dayOfMonth);
+            if (appointmentDetailsMap.containsKey(selectedDate)) {
+                appointmentsTextView.setText("Appointment on " + selectedDate + ":\n" + appointmentDetailsMap.get(selectedDate));
+            } else {
+                appointmentsTextView.setText("No appointments on " + selectedDate);
+            }
+        });
 
     }
 
@@ -54,29 +66,40 @@ public class TrackDatesPage extends AppCompatActivity {
         databaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                Log.d("TrackDatesPage", "DataSnapshot contents: " + dataSnapshot.toString());
+
                 if (dataSnapshot.exists()) {
-                    appointmentDates.clear(); // Clear the list before adding new dates
-                    StringBuilder appointmentsBuilder = new StringBuilder(); // To store appointment details for TextView
+                    appointmentDates.clear();
+                    appointmentDetailsMap.clear();
+                    StringBuilder appointmentsBuilder = new StringBuilder();
 
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                        String date = snapshot.child("date").getValue(String.class);
+                        // Debugging to see what keys and values are under each snapshot
+                        Log.d("TrackDatesPage", "Snapshot Key: " + snapshot.getKey());
+                        Log.d("TrackDatesPage", "Snapshot Value: " + snapshot.getValue());
+
+                        String date = snapshot.child("selectedDate").getValue(String.class);
                         String time = snapshot.child("time").getValue(String.class);
 
                         if (date != null && time != null) {
                             appointmentDates.add(date);
-
-                            // Add appointment details to the StringBuilder
+                            String details = "Time: " + time;
+                            appointmentDetailsMap.put(date, details);
                             appointmentsBuilder.append("Appointment on: ").append(date).append(" at ").append(time).append("\n");
+                        } else {
+                            Log.d("TrackDatesPage", "Date or time is missing for this appointment.");
                         }
                     }
 
-                    // Update the TextView with the appointment details
-                    appointmentsTextView.setText(appointmentsBuilder.toString());
-
-                    // Highlight the fetched dates on the CalendarView
-                    highlightAppointmentDates();
+                    // Update the TextView with all the appointment details
+                    if (appointmentsBuilder.length() > 0) {
+                        appointmentsTextView.setText(appointmentsBuilder.toString());
+                    } else {
+                        appointmentsTextView.setText("No appointments found.");
+                    }
                 } else {
-                    Toast.makeText(TrackDatesPage.this, "No appointments found.", Toast.LENGTH_SHORT).show();
+                    appointmentsTextView.setText("No appointments found.");
+                    Log.d("TrackDatesPage", "No data found under the user ID.");
                 }
             }
 
@@ -87,25 +110,12 @@ public class TrackDatesPage extends AppCompatActivity {
         });
     }
 
-
     private void highlightAppointmentDates() {
-        // Iterate through all appointment dates and set them on the CalendarView
-        calendarView.setDate(calendar.getInstance().getTimeInMillis()); // Start with today's date
-
+        // Highlight the dates on the CalendarView
         for (String appointmentDate : appointmentDates) {
-            try {
-                // Convert the appointment date (in String format) to milliseconds
-                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
-                Calendar appointmentCalendar = calendar.getInstance();
-                appointmentCalendar.setTime(dateFormat.parse(appointmentDate)); // Parse the date
-
-                // Highlight or mark the date on the CalendarView
-                calendarView.setDate(appointmentCalendar.getTimeInMillis(), true, true);
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            Log.d("TrackDatesPage", "Highlighting appointment date: " + appointmentDate);
+            // Here you can implement logic to visually indicate these dates in your UI, if required
+            // Note: CalendarView does not support highlighting multiple dates directly
         }
-
     }
 }

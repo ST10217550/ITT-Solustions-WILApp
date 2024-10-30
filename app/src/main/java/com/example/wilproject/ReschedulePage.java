@@ -22,6 +22,7 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.CalendarView;
 import android.widget.DatePicker;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -33,8 +34,11 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Locale;
 
 public class ReschedulePage extends AppCompatActivity {
 
@@ -54,7 +58,9 @@ public class ReschedulePage extends AppCompatActivity {
     private int selectedDay;
     private DatabaseReference databaseRef;
     private FirebaseAuth auth;
-    private String appointmentId;
+    private String userId;
+    private String IDNumb;
+    private Spinner illnesses;
 
     private static final String CHANNEL_ID = "appointment_channel";
 
@@ -79,18 +85,12 @@ public class ReschedulePage extends AppCompatActivity {
         selectedDay = calander.get(Calendar.DAY_OF_MONTH);
 
         auth = FirebaseAuth.getInstance();
-        String userId = auth.getCurrentUser().getUid(); // Get the currently logged-in user's ID
+        userId = auth.getCurrentUser().getUid(); // Get the currently logged-in user's ID
         databaseRef = FirebaseDatabase.getInstance().getReference("appointments").child(userId);
 
-        appointmentId = getStoredAppointmentId();
-        if (appointmentId == null) {
-            Toast.makeText(this, "No appointment ID found!", Toast.LENGTH_SHORT).show();
-            finish(); // Close the activity
-            return;
-        }
 
-        Log.d("ReschedulePage", "Appointment ID: " + appointmentId);
-        fetchCurrentAppointment();
+        fetchAppointmentDetails();
+
 
         initDatePicker();
         dateBtn.setOnClickListener(v -> {
@@ -124,15 +124,11 @@ public class ReschedulePage extends AppCompatActivity {
 
 
         reSchedule.setOnClickListener(v -> {
-            if (appointmentId == null) {
-                Toast.makeText(ReschedulePage.this, "You have no appointment to reschedule!", Toast.LENGTH_SHORT).show();
-                return; // Prevent further execution if there is no appointment
-            }
-
+            rescheduleAppointment();
             // Proceed to update details and update the appointment
             updateDetails();
             updateCalendarView();
-            updateAppointment(); // Call the method to update the appointment in Firebase
+             // Call the method to update the appointment in Firebase
             createNotificationChannel();
         });
 
@@ -202,65 +198,68 @@ public class ReschedulePage extends AppCompatActivity {
     }
 
 
-    private String getStoredAppointmentId() {
-        SharedPreferences sharedPreferences = getSharedPreferences("AppointmentPrefs", MODE_PRIVATE);
-        return sharedPreferences.getString("appointmentId", null); // Default is null if not found
-    }
 
-
-    private void fetchCurrentAppointment() {
-        databaseRef.child(appointmentId).addListenerForSingleValueEvent(new ValueEventListener() {
+    private void fetchAppointmentDetails() {
+        databaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.exists()) {
-                    String date = snapshot.child("date").getValue(String.class);
-                    String time = snapshot.child("time").getValue(String.class);
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    IDNumb = dataSnapshot.child("IDNumb").getValue(String.class);
+                    String selectedDate = dataSnapshot.child("selectedDate").getValue(String.class);
+                    String time = dataSnapshot.child("time").getValue(String.class);
+                    String illness = dataSnapshot.child("illness").getValue(String.class);
+                    String details = dataSnapshot.child("details").getValue(String.class);
 
-                    // Parse the fetched date and time
-                    String[] dateParts = date.split("-");
-                    selectedYear = Integer.parseInt(dateParts[0]);
-                    selectedMonth = Integer.parseInt(dateParts[1]) - 1; // Month is zero-based
-                    selectedDay = Integer.parseInt(dateParts[2]);
-
-                    String[] timeParts = time.split(":");
-                    selectedhrs = Integer.parseInt(timeParts[0]);
-                    selectedmin = Integer.parseInt(timeParts[1]);
-
-                    // Update UI with current details
-
-                    String formattedDate = String.format("Selected Date: %02d/%02d/%d", selectedDay, selectedMonth, selectedYear);
-                    String formattedTime = String.format("Selected Time: %02d:%02d", selectedhrs, selectedmin);
-
-                    // Update the TextView with both date and time
-                    preAppointment.setText(formattedDate + "\n" + formattedTime);
-                    updateCalendarView();
+                    // Update the UI with the fetched details
+                    preAppointment.setText("Date: " + selectedDate + ", Time: " + time + ", Details: " + details);
                 } else {
-                    Toast.makeText(ReschedulePage.this, "Appointment not found", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ReschedulePage.this, "No appointment found.", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(ReschedulePage.this, "Failed to fetch appointment", Toast.LENGTH_SHORT).show();
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(ReschedulePage.this, "Database error: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    private void updateAppointment() {
-        String newDate = String.format("%04d-%02d-%02d", selectedYear, selectedMonth + 1, selectedDay);
-        String newTime = String.format("%02d:%02d", selectedhrs, selectedmin);
 
-        // Update the appointment details in Firebase
-        databaseRef.child(appointmentId).child("date").setValue(newDate);
-        databaseRef.child(appointmentId).child("time").setValue(newTime)
+    // Method to update the appointment in Firebase
+    private void rescheduleAppointment() {
+        if (userId == null || userId.isEmpty()) {
+            Toast.makeText(this, "Error: User ID is not available.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        // Set up the calendar with the selected hour and minute
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, selectedhrs);
+        calendar.set(Calendar.MINUTE, selectedmin);
+
+        // Format the selected date and time
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+        SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.US);
+        String selectedDate = dateFormat.format(calendar.getTime());
+        String selectedTime = timeFormat.format(calendar.getTime());
+
+        // Prepare updated data with only the required fields
+        HashMap<String, Object> updatedData = new HashMap<>();
+        updatedData.put("selectedDate", selectedDate); // Updated date
+        updatedData.put("time", selectedTime); // Updated time
+        updatedData.put("details", "Rescheduled Appointment: " + new SimpleDateFormat("EEE, MMM dd, yyyy 'at' hh:mm a", Locale.US).format(calendar.getTime()));
+
+        // Update only the selected fields in the Firebase database
+        databaseRef.child("appointments").child(userId) // Path under appointments/userId
+                .updateChildren(updatedData) // Use updateChildren for partial updates
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        Toast.makeText(ReschedulePage.this, "Appointment updated successfully!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(ReschedulePage.this, "Appointment rescheduled successfully!", Toast.LENGTH_SHORT).show();
                     } else {
-                        Toast.makeText(ReschedulePage.this, "Failed to update appointment.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(ReschedulePage.this, "Failed to reschedule appointment.", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
+
 
     @SuppressLint({"ScheduleExactAlarm", "MissingPermission"})
     private void sendRescheduleNotification(String date, String time) {

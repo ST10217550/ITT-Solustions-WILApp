@@ -126,9 +126,9 @@ public class ProfilePage extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
                     // Retrieve user information from Firebase
+                    String idNumber = dataSnapshot.child("IDNumb").getValue(String.class);
                     String name = dataSnapshot.child("name").getValue(String.class);
                     String surname = dataSnapshot.child("surname").getValue(String.class);
-                    String idNumber = dataSnapshot.child("idnumb").getValue(String.class);
                     String email = dataSnapshot.child("email").getValue(String.class);
 
                     // Set retrieved values in TextViews
@@ -136,44 +136,8 @@ public class ProfilePage extends AppCompatActivity {
                     surnameTxt.setText(surname);
                     idNumTxt.setText(idNumber);
                     emailTxt.setText(email);
-
-                    // Load other data if available
-                    phoneNumb.setText(dataSnapshot.child("phone").getValue(String.class));
-                    address.setText(dataSnapshot.child("address").getValue(String.class));
-                    city.setText(dataSnapshot.child("city").getValue(String.class));
-                    state.setText(dataSnapshot.child("state").getValue(String.class));
-                    zipCode.setText(dataSnapshot.child("zipCode").getValue(String.class));
-                    allergies.setText(dataSnapshot.child("allergies").getValue(String.class));
-
-                    DataSnapshot nextOfKin = dataSnapshot.child("nextOfKin");
-                    if (nextOfKin.exists()) {
-                        nextName.setText(nextOfKin.child("name").getValue(String.class));
-                        nextRelation.setText(nextOfKin.child("relation").getValue(String.class));
-                        nextphoneNumb.setText(nextOfKin.child("phone").getValue(String.class));
-                        nextEmail.setText(nextOfKin.child("email").getValue(String.class));
-                    }
-
-                    // Set gender
-                    String gender = dataSnapshot.child("gender").getValue(String.class);
-                    if (gender != null) {
-                        if (gender.equalsIgnoreCase("Male")) {
-                            genderGroup.check(R.id.femaleBtn);
-                        } else if (gender.equalsIgnoreCase("Female")) {
-                            genderGroup.check(R.id.maleBtn);
-                        }
-                    }
-
-                    // Set illnesses if available
-                    String illness = dataSnapshot.child("illness").getValue(String.class);
-                    if (illness != null) {
-                        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(ProfilePage.this,
-                                R.array.type, android.R.layout.simple_spinner_item);
-                        illnessesSpinner.setAdapter(adapter);
-                        if (illness != null) {
-                            int spinnerPosition = adapter.getPosition(illness);
-                            illnessesSpinner.setSelection(spinnerPosition);
-                        }
-                    }
+                } else {
+                    Toast.makeText(ProfilePage.this, "No data found", Toast.LENGTH_SHORT).show();
                 }
             }
 
