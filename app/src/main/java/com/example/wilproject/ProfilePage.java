@@ -121,7 +121,7 @@ public class ProfilePage extends AppCompatActivity {
 
 
     private void loadUserProfileData() {
-        userProfileRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
@@ -130,7 +130,8 @@ public class ProfilePage extends AppCompatActivity {
                     String name = dataSnapshot.child("name").getValue(String.class);
                     String surname = dataSnapshot.child("surname").getValue(String.class);
                     String email = dataSnapshot.child("email").getValue(String.class);
-
+                    //String profileDetails = "ID number: " + idNumber + "\nName: " + name
+                            //+ "\nSurname: " + surname + "\nEmail: " + email;
                     // Set retrieved values in TextViews
                     nameTxt.setText(name);
                     surnameTxt.setText(surname);

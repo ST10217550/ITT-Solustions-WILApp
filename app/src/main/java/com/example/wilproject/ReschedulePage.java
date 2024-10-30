@@ -19,9 +19,11 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.CalendarView;
 import android.widget.DatePicker;
+import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -62,10 +64,15 @@ public class ReschedulePage extends AppCompatActivity {
     private String IDNumb;
     private Spinner illnesses;
 
+    private ImageButton home;
+    private ImageButton profile;
+    private ImageButton track;
+    private ImageButton getDate;
+
     private static final String CHANNEL_ID = "appointment_channel";
 
 
-    @SuppressLint("MissingInflatedId")
+    @SuppressLint({"MissingInflatedId", "WrongViewCast"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,6 +84,10 @@ public class ReschedulePage extends AppCompatActivity {
         reSchedule = findViewById(R.id.rescheduleBtn);
         calendarView = findViewById(R.id.calendarView3);
         preAppointment = findViewById(R.id.preAppointDetails);
+        home = findViewById(R.id.button_home);
+        profile = findViewById(R.id.button_profile);
+        track = findViewById(R.id.button_track);
+        getDate = findViewById(R.id.button_reschedule);
 
         calander = calander.getInstance();
 
@@ -132,8 +143,37 @@ public class ReschedulePage extends AppCompatActivity {
             createNotificationChannel();
         });
 
+        home.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(ReschedulePage.this, HomePage.class);
+                startActivity(intent);
 
+            }
+        });
 
+        profile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(ReschedulePage.this, ProfilePage.class);
+                startActivity(intent);
+            }
+        });
+        track.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(ReschedulePage.this, TrackDatesPage.class);
+                startActivity(intent);
+            }
+        });
+
+        getDate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(ReschedulePage.this, ReschedulePage.class);
+                startActivity(intent);
+            }
+        });
 
     }
 

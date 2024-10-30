@@ -28,6 +28,7 @@ public class RegisterPage extends AppCompatActivity {
     private EditText regSurname;
     private EditText emailReg;
     private EditText passwordReg;
+    private EditText comfirmPass;
     private EditText idNum;
     private Button regBtn;
     private Button loginBtn;
@@ -51,6 +52,8 @@ public class RegisterPage extends AppCompatActivity {
         idNum = findViewById(R.id.idNum);
         regBtn = findViewById(R.id.regBtn1);
         loginBtn = findViewById(R.id.LoginBtn1);
+        comfirmPass = findViewById(R.id.confirmpasswordReg);
+
 
         regBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -66,7 +69,25 @@ public class RegisterPage extends AppCompatActivity {
                 String passwordText = passwordReg.getText().toString();
 
 
+                if(TextUtils.isEmpty(IDNumb)){
+                    Toast.makeText(RegisterPage.this, "Enter Id Number", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
+                if(IDNumb.length() < 10 ){
+                    Toast.makeText(RegisterPage.this, "Invalid ID number", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                if(TextUtils.isEmpty(firstName)){
+                    Toast.makeText(RegisterPage.this, "Enter your Name", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                if(TextUtils.isEmpty(lastName)){
+                    Toast.makeText(RegisterPage.this, "Enter your Surmane", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
                 if (TextUtils.isEmpty(emailText)) {
                     Toast.makeText(RegisterPage.this, "Enter email", Toast.LENGTH_SHORT).show();

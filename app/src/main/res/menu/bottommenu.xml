@@ -2,28 +2,26 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/home"
-        android:title="home"
-        android:icon="@drawable/baseline_add_home_work_24"/>
-
+        android:icon="@drawable/baseline_add_home_work_24"
+        android:title="home"/>
     <item
         android:id="@+id/profile"
-        android:title="profile"
-        android:icon="@drawable/baseline_account_circle_24"/>
+        android:icon="@drawable/baseline_account_circle_24"
+        android:title="profile"/>
 
     <item
         android:id="@+id/trackDate"
-        android:title="Track"
-        android:icon="@drawable/baseline_calendar_month_24"/>
+        android:icon="@drawable/baseline_calendar_month_24"
+        android:title="Track"/>
 
     <item
         android:id="@+id/reschedule"
-        android:title="reschedule"
-        android:icon="@drawable/baseline_calendar_today_24"/>
+        android:icon="@drawable/baseline_calendar_today_24"
+        android:title="reschedule"/>
 
     <item
         android:id="@+id/getDate"
-        android:title="schedule"
-        android:icon="@drawable/baseline_assignment_add_24"/>
-
+        android:icon="@drawable/baseline_assignment_add_24"
+        android:title="schedule"/>
 
 </menu>

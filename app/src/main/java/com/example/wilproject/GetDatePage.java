@@ -2,6 +2,7 @@ package com.example.wilproject;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
@@ -14,22 +15,24 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CalendarView;
+import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.navigation.NavigationBarView;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -41,16 +44,9 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
-import android.content.Intent;
-import android.os.Bundle;
-import android.view.MenuItem;
-import android.widget.Toast;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import com.google.android.material.navigation.NavigationBarView;
 
 
 public class GetDatePage extends AppCompatActivity {
@@ -63,7 +59,7 @@ public class GetDatePage extends AppCompatActivity {
     private int daysToAdd = 30;
     private int selectedHour = 12;
     private int selectedMin = 0;
-    private String status= "pending";
+    private String status = "pending";
     private TextView showDetails;
     private HashMap<String, String> appointments = new HashMap<>();
 
@@ -71,11 +67,16 @@ public class GetDatePage extends AppCompatActivity {
     private FirebaseAuth auth;
 
     private String IDNumb;
-    BottomNavigationView bottomNavigationView;
+
+    private ImageButton home;
+    private ImageButton profile;
+    private ImageButton track;
+    private ImageButton reschedule;
+
 
     private static final String CHANNEL_ID = "appointment_channel";
 
-    @SuppressLint("MissingInflatedId")
+    @SuppressLint({"MissingInflatedId", "WrongViewCast"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -88,46 +89,11 @@ public class GetDatePage extends AppCompatActivity {
         schedule = findViewById(R.id.submitBtn);
         showDetails = findViewById(R.id.showAppoimentDetails);
         schedule = findViewById(R.id.submitBtn);
-        //bottomNavigationView = findViewById(R.id.bottomMenu);
+        home = findViewById(R.id.button_home);
+        profile = findViewById(R.id.button_profile);
+        track = findViewById(R.id.button_track);
+        reschedule = findViewById(R.id.button_reschedule);
 
-        NavigationBarView bottomNavigationView = findViewById(R.id.bottomMenu);
-
-
-        /*bottomNavigationView.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
-            @SuppressLint("NonConstantResourceId")
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                switch (item.getItemId()) {
-                    case R.id.home:
-                        Toast.makeText(GetDatePage.this, "Home selected", Toast.LENGTH_SHORT).show();
-                        startActivity(new Intent(GetDatePage.this, HomePage.class));
-                        return true;
-
-                    case R.id.profile:
-                        Toast.makeText(GetDatePage.this, "Profile selected", Toast.LENGTH_SHORT).show();
-                        startActivity(new Intent(GetDatePage.this, ProfilePage.class));
-                        return true;
-
-                    case R.id.trackDate:
-                        Toast.makeText(GetDatePage.this, "Track selected", Toast.LENGTH_SHORT).show();
-                        startActivity(new Intent(GetDatePage.this, TrackDatesPage.class));
-                        return true;
-
-                    case R.id.reschedule:
-                        Toast.makeText(GetDatePage.this, "Reschedule selected", Toast.LENGTH_SHORT).show();
-                        startActivity(new Intent(GetDatePage.this, ReschedulePage.class));
-                        return true;
-
-                    case R.id.getDate:
-                        Toast.makeText(GetDatePage.this, "Schedule selected", Toast.LENGTH_SHORT).show();
-                        startActivity(new Intent(GetDatePage.this, GetDatePage.class));
-                        return true;
-
-                    default:
-                        return false;
-                }
-            }
-        });*/
 
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
@@ -167,14 +133,11 @@ public class GetDatePage extends AppCompatActivity {
         }
 
 
-
         calendar = Calendar.getInstance();
 
         auth = FirebaseAuth.getInstance();
         String userId = auth.getCurrentUser().getUid(); // Get the currently logged-in user's ID
         databaseRef = FirebaseDatabase.getInstance().getReference("appointments").child(userId); // Appointments for the specific user
-
-
 
 
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
@@ -209,7 +172,7 @@ public class GetDatePage extends AppCompatActivity {
                         daysToAdd = 60;
                         break;
                     case "More Than 1":
-                        daysToAdd =28;
+                        daysToAdd = 28;
                         break;
                 }
             }
@@ -238,6 +201,39 @@ public class GetDatePage extends AppCompatActivity {
         schedule.setOnClickListener(v -> {
             scheduleAppointment(daysToAdd);
         });
+
+        home.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(GetDatePage.this, HomePage.class);
+                startActivity(intent);
+
+            }
+        });
+
+        profile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(GetDatePage.this, ProfilePage.class);
+                startActivity(intent);
+            }
+        });
+        track.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(GetDatePage.this, TrackDatesPage.class);
+                startActivity(intent);
+            }
+        });
+
+        reschedule.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(GetDatePage.this, ReschedulePage.class);
+                startActivity(intent);
+            }
+        });
+
 
     }
 
@@ -311,8 +307,8 @@ public class GetDatePage extends AppCompatActivity {
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         Log.d("Firebase", "Appointment saved successfully for user: " + userId);
-                        sendNotification("Appointment Scheduled", "Your appointment is scheduled for " + selectedDate + " at " + selectedTime);
-                        scheduleNotificationAlarm(daysToAdd - 3, selectedDate, selectedTime);
+                        sendImmediateNotification(selectedDate, selectedTime);  // Notify immediately
+                        scheduleNotification(userId);
                         Toast.makeText(GetDatePage.this, "Appointment saved successfully!", Toast.LENGTH_SHORT).show();
                     } else {
                         Toast.makeText(GetDatePage.this, "Failed to save appointment.", Toast.LENGTH_SHORT).show();
@@ -330,81 +326,88 @@ public class GetDatePage extends AppCompatActivity {
     }
 
 
-
-    @SuppressLint("MissingPermission")
-    private void createAppointmentNotification(String appointmentDetails) {
-        Intent intent = new Intent(this, ReschedulePage.class); // Opens ReschedulePage when tapped
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "appointment_channel")
-                .setSmallIcon(R.drawable.notification_icon)
-                .setContentTitle("Appointment Reminder")
-                .setContentText(appointmentDetails)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setContentIntent(pendingIntent)
-                .setAutoCancel(true);
-
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-        notificationManager.notify(1, builder.build());
-    }
-
-    @SuppressLint("MissingPermission")
-    private void sendNotification(String title, String message) {
-        createNotificationChannel();
+    // Immediate notification to confirm appointment scheduling
+    private void sendImmediateNotification(String date, String time) {
+        Log.d("GetDatePage", "Sending immediate notification...");
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.baseline_circle_notifications_24) // replace with your icon
-                .setContentTitle(title)
-                .setContentText(message)
+                .setSmallIcon(android.R.drawable.ic_dialog_info)
+                .setContentTitle("Appointment Scheduled")
+                .setContentText("Your appointment is set for " + date + " at " + time + ".")
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true);
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-        notificationManager.notify(1, builder.build());
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        notificationManager.notify(2, builder.build());  // Unique notification ID for immediate notification
+    }
+
+    // Schedule notification 3 days before the appointment
+    private void scheduleNotification(String userId) {
+        databaseRef = FirebaseDatabase.getInstance().getReference("appointments").child(userId);
+
+        databaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                String date = snapshot.child("date").getValue(String.class);
+                String time = snapshot.child("time").getValue(String.class);
+
+                if (date != null && time != null) {
+                    calendar = parseDateTime(date, time);
+                    calendar.add(Calendar.DAY_OF_MONTH, -3);  // Set for 3 days before the appointment
+
+                    AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+                    Intent intent = new Intent(GetDatePage.this, NotificationReceiver.class);
+                    intent.putExtra("date", date);
+                    intent.putExtra("time", time);
+                    PendingIntent pendingIntent = PendingIntent.getBroadcast(GetDatePage.this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+                    if (alarmManager != null) {
+                        alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+                        Toast.makeText(GetDatePage.this, "Notification scheduled!", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(GetDatePage.this, "Failed to schedule notification", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private Calendar parseDateTime(String date, String time) {
+        Calendar cal = Calendar.getInstance();
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
+            Date dateTime = sdf.parse(date + " " + time);
+            if (dateTime != null) {
+                cal.setTime(dateTime);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return cal;
     }
 
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            CharSequence name = "Appointment Notifications";
-            String description = "Channel for appointment notifications";
-            int importance = NotificationManager.IMPORTANCE_HIGH;
-            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
-            channel.setDescription(description);
-
-            NotificationManager notificationManager = getSystemService(NotificationManager.class);
-            if (notificationManager != null) {
-                notificationManager.createNotificationChannel(channel);
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "Appointment Notifications", NotificationManager.IMPORTANCE_HIGH);
+            channel.setDescription("Channel for appointment reminders");
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            if (manager != null) {
+                manager.createNotificationChannel(channel);
             }
         }
-    }
-
-    @SuppressLint("ScheduleExactAlarm")
-    private void scheduleNotificationAlarm(int daysBefore, String date, String time) {
-        Calendar alarmCalendar = Calendar.getInstance();
-        alarmCalendar.add(Calendar.DAY_OF_MONTH, daysBefore);
-
-        Context context = this; // or getContext() if inside a Fragment
-        int requestCode = 0;
-
-        Intent intent = new Intent(this, NotificationReceiver.class);
-        intent.putExtra("appointmentDetails", "Your appointment is in 3 days on " + date + " at " + time);
-        // Modify the PendingIntent creation line
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                context,
-                requestCode,
-                intent,
-                PendingIntent.FLAG_IMMUTABLE // or use FLAG_MUTABLE if necessary
-        );
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-            if (!alarmManager.canScheduleExactAlarms()) {
-                Intent intent1 = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
-                startActivity(intent1); // This prompts the user to grant permission
-                alarmManager.set(AlarmManager.RTC_WAKEUP, alarmCalendar.getTimeInMillis(), pendingIntent);
-            }
-        }
-
     }
 }
 

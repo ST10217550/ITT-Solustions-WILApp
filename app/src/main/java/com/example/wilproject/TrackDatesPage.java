@@ -4,22 +4,29 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.CalendarView;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -33,8 +40,14 @@ public class TrackDatesPage extends AppCompatActivity {
     private ArrayList<String> appointmentDates = new ArrayList<>(); // List to store all appointment dates
     private TextView appointmentsTextView;
     private Map<String, String> appointmentDetailsMap = new HashMap<>();
+    private String userId;
 
-    @SuppressLint("MissingInflatedId")
+    private ImageButton home;
+    private ImageButton profile;
+    private ImageButton getDate;
+    private ImageButton reschedule;
+
+    @SuppressLint({"MissingInflatedId", "WrongViewCast"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,80 +55,94 @@ public class TrackDatesPage extends AppCompatActivity {
 
         calendarView = findViewById(R.id.calendarViewTrack);
         appointmentsTextView = findViewById(R.id.appoiments);
+        home = findViewById(R.id.button_home);
+        profile = findViewById(R.id.button_profile);
+        getDate = findViewById(R.id.button_track);
+        reschedule = findViewById(R.id.button_reschedule);
+
 
         auth = FirebaseAuth.getInstance();
-        String userId = auth.getCurrentUser().getUid();
-        databaseRef = FirebaseDatabase.getInstance().getReference("appointments").child(userId);
 
-        // Fetch all appointment dates from Firebase
-        fetchAppointmentDates();
+        FirebaseUser currentUser = auth.getCurrentUser();
+        if (currentUser != null) {
+            userId = currentUser.getUid();
+            databaseRef = FirebaseDatabase.getInstance().getReference("appointments").child(userId);
+            checkForAppointment();
+        } else {
+            appointmentsTextView.setText("User not logged in.");
+        }
 
-        // Set up a listener to detect when the user selects a date
-        calendarView.setOnDateChangeListener((view, year, month, dayOfMonth) -> {
-            String selectedDate = String.format(Locale.US, "%04d-%02d-%02d", year, month + 1, dayOfMonth);
-            if (appointmentDetailsMap.containsKey(selectedDate)) {
-                appointmentsTextView.setText("Appointment on " + selectedDate + ":\n" + appointmentDetailsMap.get(selectedDate));
-            } else {
-                appointmentsTextView.setText("No appointments on " + selectedDate);
+        home.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(TrackDatesPage.this, HomePage.class);
+                startActivity(intent);
+
+            }
+        });
+
+        profile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(TrackDatesPage.this, ProfilePage.class);
+                startActivity(intent);
+            }
+        });
+        getDate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(TrackDatesPage.this, GetDatePage.class);
+                startActivity(intent);
+            }
+        });
+
+        reschedule.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(TrackDatesPage.this, ReschedulePage.class);
+                startActivity(intent);
             }
         });
 
     }
 
-    private void fetchAppointmentDates() {
+    private void checkForAppointment() {
         databaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Log.d("TrackDatesPage", "DataSnapshot contents: " + dataSnapshot.toString());
-
                 if (dataSnapshot.exists()) {
-                    appointmentDates.clear();
-                    appointmentDetailsMap.clear();
-                    StringBuilder appointmentsBuilder = new StringBuilder();
+                    String selectedDate = dataSnapshot.child("selectedDate").getValue(String.class);
+                    String time = dataSnapshot.child("time").getValue(String.class);
+                    String illness = dataSnapshot.child("illness").getValue(String.class);
+                    String status = dataSnapshot.child("status").getValue(String.class);
 
-                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                        // Debugging to see what keys and values are under each snapshot
-                        Log.d("TrackDatesPage", "Snapshot Key: " + snapshot.getKey());
-                        Log.d("TrackDatesPage", "Snapshot Value: " + snapshot.getValue());
+                    String appointmentDetails = "Illness: " + illness + "\n" +
+                            "Date: " + selectedDate + "\n" +
+                            "Time: " + time + "\n" +
+                            "Status: " + status;
 
-                        String date = snapshot.child("selectedDate").getValue(String.class);
-                        String time = snapshot.child("time").getValue(String.class);
+                    appointmentsTextView.setText(appointmentDetails);
 
-                        if (date != null && time != null) {
-                            appointmentDates.add(date);
-                            String details = "Time: " + time;
-                            appointmentDetailsMap.put(date, details);
-                            appointmentsBuilder.append("Appointment on: ").append(date).append(" at ").append(time).append("\n");
-                        } else {
-                            Log.d("TrackDatesPage", "Date or time is missing for this appointment.");
+                    // Parse selectedDate to set it on the CalendarView
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+                    try {
+                        Date date = dateFormat.parse(selectedDate);
+                        if (date != null) {
+                            calendarView.setDate(date.getTime(), true, true); // Move to appointment date
                         }
-                    }
-
-                    // Update the TextView with all the appointment details
-                    if (appointmentsBuilder.length() > 0) {
-                        appointmentsTextView.setText(appointmentsBuilder.toString());
-                    } else {
-                        appointmentsTextView.setText("No appointments found.");
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                        Toast.makeText(TrackDatesPage.this, "Error parsing appointment date.", Toast.LENGTH_SHORT).show();
                     }
                 } else {
-                    appointmentsTextView.setText("No appointments found.");
-                    Log.d("TrackDatesPage", "No data found under the user ID.");
+                    appointmentsTextView.setText("No appointment found.");
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(TrackDatesPage.this, "Failed to fetch appointments.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(TrackDatesPage.this, "Error retrieving appointment.", Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-    private void highlightAppointmentDates() {
-        // Highlight the dates on the CalendarView
-        for (String appointmentDate : appointmentDates) {
-            Log.d("TrackDatesPage", "Highlighting appointment date: " + appointmentDate);
-            // Here you can implement logic to visually indicate these dates in your UI, if required
-            // Note: CalendarView does not support highlighting multiple dates directly
-        }
     }
 }
